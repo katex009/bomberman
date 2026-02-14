@@ -2,6 +2,7 @@ from arcade_machine_sdk import GameBase
 import pygame
 from bomberman.entities.player import Player
 from bomberman.game.states.menu_state import menu_state
+from bomberman.game.states.play_state import play_state
 
 
 
@@ -18,13 +19,17 @@ class BombermanGame(GameBase):
         self.player = Player()
     
     def handle_events(self, events):
+        next_state = self.state.handle_events(events)
+        if next_state == "play":
+            self.state = play_state()
+        
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.stop()
 
     def update(self, dt):
-        self.player.update(dt)
+        self.state.update(dt)
 
     def render(self):
         self.state.render(self.surface)
