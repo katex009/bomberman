@@ -12,7 +12,7 @@ if not pygame.get_init():
 
 metadata = (
     GameMeta()
-    .with_title("Bomberman Clásico")
+    .with_title("Bomberman")
     .with_description("Juego arcade estilo Bomberman")
     .with_release_date("2026")
     .with_group_number(1)

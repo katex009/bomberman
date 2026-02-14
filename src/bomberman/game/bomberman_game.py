@@ -1,6 +1,7 @@
 from arcade_machine_sdk import GameBase
 import pygame
 from bomberman.entities.player import Player
+from bomberman.game.states.menu_state import menu_state
 
 
 
@@ -9,9 +10,11 @@ class BombermanGame(GameBase):
     def __init__(self, metadata):
         super().__init__(metadata)
         self.bg_color = (30, 30, 30)
+        self.state = None
 
     def start(self, surface):
         super().start(surface)
+        self.state = menu_state()
         self.player = Player()
     
     def handle_events(self, events):
@@ -24,8 +27,8 @@ class BombermanGame(GameBase):
         self.player.update(dt)
 
     def render(self):
-        self.surface.fill(self.bg_color)
-        self.player.draw(self.surface)
+        self.state.render(self.surface)
+        
 
 
 
