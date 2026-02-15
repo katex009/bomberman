@@ -38,17 +38,18 @@ class menu_state:
 
 
     def update(self, dt):
-        mouse_pos = pygame.mouse.get_pos()
+        if pygame.get_init():
+            mouse_pos = pygame.mouse.get_pos()
 
-        if self.start_rect.collidepoint(mouse_pos):
-            self.actual_start_image = self.start_image2
-        else:
-            self.actual_start_image = self.start_image
+            if self.start_rect.collidepoint(mouse_pos):
+                self.actual_start_image = self.start_image2
+            else:
+                self.actual_start_image = self.start_image
 
-        if self.exit_rect.collidepoint(mouse_pos):
-            self.actual_exit_image = self.exit_image2
-        else:
-            self.actual_exit_image = self.exit_image
+            if self.exit_rect.collidepoint(mouse_pos):
+                self.actual_exit_image = self.exit_image2
+            else:
+                self.actual_exit_image = self.exit_image
 
     def handle_events(self, events):
         for event in events:

@@ -1,12 +1,11 @@
 from arcade_machine_sdk import GameBase
 import pygame
-from bomberman.entities.player import Player
-from bomberman.game.states.menu_state import menu_state
-from bomberman.game.states.play_state import play_state
-from bomberman.game.states.pause_state import pause_state
+from entities.player import Player
+from core.states.menu_state import menu_state
+from core.states.play_state import play_state
+from core.states.pause_state import pause_state
 
-
-
+pygame.init()
 
 class BombermanGame(GameBase):
     def __init__(self, metadata):
