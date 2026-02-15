@@ -3,6 +3,7 @@ import pygame
 from bomberman.entities.player import Player
 from bomberman.game.states.menu_state import menu_state
 from bomberman.game.states.play_state import play_state
+from bomberman.game.states.pause_state import pause_state
 
 
 
@@ -12,6 +13,7 @@ class BombermanGame(GameBase):
         super().__init__(metadata)
         self.bg_color = (30, 30, 30)
         self.state = None
+        self.previous_state = None
 
     def start(self, surface):
         super().start(surface)
@@ -22,11 +24,14 @@ class BombermanGame(GameBase):
         next_state = self.state.handle_events(events)
         if next_state == "play":
             self.state = play_state()
-        
-        for event in events:
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    self.stop()
+        elif next_state == "pause":
+            self.previous_state = self.state
+            self.state = pause_state(self.previous_state)
+        elif next_state == "resume":
+            self.state = self.previous_state
+        elif next_state == "menu":
+            self.state = menu_state()
+
 
     def update(self, dt):
         self.state.update(dt)

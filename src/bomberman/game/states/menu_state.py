@@ -57,7 +57,6 @@ class menu_state:
                     if self.start_rect.collidepoint(event.pos):
                         return "play"
             
-
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  
