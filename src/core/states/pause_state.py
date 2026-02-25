@@ -10,6 +10,11 @@ class pause_state:
 
         GAME_DIR = Path(__file__).resolve().parent 
         ASSETS_DIR = GAME_DIR.parents[1] / "assets" / "images" / "pause"
+        SOUNDS_DIR = GAME_DIR.parents[1] / "assets" / "sounds"
+
+        self.boton_sound = pygame.mixer.Sound(str(SOUNDS_DIR / "sonido-letras.mp3"))
+        self.boton_sound.set_volume(0.5)
+        self.hover_played = {"resume": False, "main_menu": False}
 
         self.pause = pygame.image.load(str(ASSETS_DIR/ "pause.png")).convert_alpha()
         self.pause_rect = self.pause.get_rect()
@@ -74,13 +79,21 @@ class pause_state:
 
         if self.resume_rect.collidepoint(mouse_pos):
             self.actual_resume = self.resume2
+            if not self.hover_played["resume"]:
+                    self.boton_sound.play()
+                    self.hover_played["resume"] = True
         else:
             self.actual_resume = self.resume
+            self.hover_played["resume"] = False
 
         if self.main_menu_rect.collidepoint(mouse_pos):
             self.actual_main_menu = self.main_menu2
+            if not self.hover_played["main_menu"]:
+                    self.boton_sound.play()
+                    self.hover_played["main_menu"] = True
         else:
             self.actual_main_menu = self.main_menu
+            self.hover_played["main_menu"] = False
 
     
 

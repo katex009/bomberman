@@ -22,11 +22,14 @@ class BombermanGame(GameBase):
     def handle_events(self, events):
         next_state = self.state.handle_events(events)
         if next_state == "play":
+            pygame.mixer.music.stop() 
             self.state = play_state()
         elif next_state == "pause":
+            pygame.mixer.music.pause()
             self.previous_state = self.state
             self.state = pause_state(self.previous_state)
         elif next_state == "resume":
+            pygame.mixer.music.unpause()
             self.state = self.previous_state
         elif next_state == "menu":
             self.state = menu_state()

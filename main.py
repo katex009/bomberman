@@ -4,7 +4,7 @@ import pygame
 from arcade_machine_sdk import GameMeta
 
 ROOT_DIR = Path(__file__).resolve().parent
-sys.path.append(str(ROOT_DIR / "src"))
+sys.path.insert(0, str(ROOT_DIR / "src"))
 from core.bomberman_game import BombermanGame
 
 if not pygame.get_init():
