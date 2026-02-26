@@ -12,18 +12,19 @@ class BombermanGame(GameBase):
         self.bg_color = (30, 30, 30)
         self.state = None
         self.previous_state = None
-        self.play_state_instance = None  # Guardar instancia de play_state
+        self.play_state_instance = None  
 
     def start(self, surface):
         super().start(surface)
         self.state = menu_state()
     
     def handle_events(self, events):
+        
         next_state = self.state.handle_events(events)
         if next_state == "play":
-            pygame.mixer.music.stop()  # Detener música del menú
+            pygame.mixer.music.stop()  
             if self.play_state_instance is None:
-                self.play_state_instance = play_state()  # Aquí se inicia la música del juego
+                self.play_state_instance = play_state()  
             self.state = self.play_state_instance
         elif next_state == "pause":
             pygame.mixer.music.pause()

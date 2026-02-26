@@ -80,7 +80,7 @@ class Explosion:
         
         self.animation_timer += dt
         if self.animation_timer >= self.animation_speed:
-            self.frame = (self.frame + 1) % 2
+            self.frame = (self.frame + 1) % 4
             self.animation_timer = 0
             self.image = self.frames[self.frame]
         

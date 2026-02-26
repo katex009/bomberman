@@ -4,6 +4,7 @@ from utils.asset import load_image
 pygame.init()
 
 class Bomb:
+
     def __init__(self, grid_x, grid_y, tile_size=50):
 
         self.grid_x = grid_x
@@ -44,5 +45,6 @@ class Bomb:
             self.exploded = True
     
     def draw(self, surface):
+        
         if not self.exploded:
             surface.blit(self.image, self.rect) 

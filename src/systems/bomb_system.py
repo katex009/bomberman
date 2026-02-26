@@ -3,7 +3,9 @@ from entities.bomb import Bomb
 from entities.explosion import Explosion
 
 class BombSystem:
+    
     def __init__(self):
+
         self.bombs = []
         self.explosions = []
         self.max_bombs = 1  

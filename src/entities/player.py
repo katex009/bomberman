@@ -5,6 +5,7 @@ pygame.init()
 
 class Player:
     def __init__(self, x=0, y=0):
+        
         self.grid_x = x
         self.grid_y = y
         self.tile_size = 50
@@ -56,6 +57,7 @@ class Player:
         self.target_y = self.grid_y * self.tile_size
     
     def handle_events(self, events):
+        
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:

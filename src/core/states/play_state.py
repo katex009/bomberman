@@ -9,6 +9,7 @@ pygame.init()
 class play_state:
 
     def __init__(self):
+        
         self.map = Map()
         self.player = Player(x=1, y=1)
         self.bomb_system = BombSystem()
