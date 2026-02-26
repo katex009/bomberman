@@ -1,6 +1,5 @@
 from arcade_machine_sdk import GameBase
 import pygame
-from entities.player import Player
 from core.states.menu_state import menu_state
 from core.states.play_state import play_state
 from core.states.pause_state import pause_state
@@ -13,17 +12,19 @@ class BombermanGame(GameBase):
         self.bg_color = (30, 30, 30)
         self.state = None
         self.previous_state = None
+        self.play_state_instance = None  # Guardar instancia de play_state
 
     def start(self, surface):
         super().start(surface)
         self.state = menu_state()
-        self.player = Player()
     
     def handle_events(self, events):
         next_state = self.state.handle_events(events)
         if next_state == "play":
-            pygame.mixer.music.stop() 
-            self.state = play_state()
+            pygame.mixer.music.stop()  # Detener música del menú
+            if self.play_state_instance is None:
+                self.play_state_instance = play_state()  # Aquí se inicia la música del juego
+            self.state = self.play_state_instance
         elif next_state == "pause":
             pygame.mixer.music.pause()
             self.previous_state = self.state
@@ -32,6 +33,7 @@ class BombermanGame(GameBase):
             pygame.mixer.music.unpause()
             self.state = self.previous_state
         elif next_state == "menu":
+            pygame.mixer.music.stop()
             self.state = menu_state()
 
 

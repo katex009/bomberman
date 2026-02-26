@@ -1,5 +1,5 @@
 import pygame
-from pathlib import Path
+from utils.asset import load_image, load_sound
 
 pygame.init()
 
@@ -8,39 +8,34 @@ class pause_state:
     def __init__(self, previous_state):
         self.previous_state = previous_state
 
-        GAME_DIR = Path(__file__).resolve().parent 
-        ASSETS_DIR = GAME_DIR.parents[1] / "assets" / "images" / "pause"
-        SOUNDS_DIR = GAME_DIR.parents[1] / "assets" / "sounds"
-
-        self.boton_sound = pygame.mixer.Sound(str(SOUNDS_DIR / "sonido-letras.mp3"))
-        self.boton_sound.set_volume(0.5)
+        self.boton_sound = load_sound("sounds/sonido-letras.mp3", volume = 0.5)
         self.hover_played = {"resume": False, "main_menu": False}
 
-        self.pause = pygame.image.load(str(ASSETS_DIR/ "pause.png")).convert_alpha()
+        self.pause = load_image("images/pause/pause.png")
         self.pause_rect = self.pause.get_rect()
 
         self.pause_rect.x = 277.5
         self.pause_rect.y = 98.5
         
-        self.resume = pygame.image.load(str(ASSETS_DIR/ "resume.png")).convert_alpha()
+        self.resume = load_image("images/pause/resume.png")
         self.resume_rect = self.resume.get_rect()
 
         self.resume_rect.x = 421
         self.resume_rect.y = 321.9
 
-        self.resume2 = pygame.image.load(str(ASSETS_DIR / "resume2.png")).convert_alpha()
+        self.resume2 = load_image("images/pause/resume2.png")
         self.actual_resume = self.resume
 
-        self.main_menu = pygame.image.load(str(ASSETS_DIR/ "main-menu.png")).convert_alpha()
+        self.main_menu = load_image("images/pause/main-menu.png")
         self.main_menu_rect = self.main_menu.get_rect()
 
         self.main_menu_rect.x = 382.9
         self.main_menu_rect.y = 454.7
 
-        self.main_menu2 = pygame.image.load(str(ASSETS_DIR / "main-menu2.png")).convert_alpha()
+        self.main_menu2 = load_image("images/pause/main-menu2.png")
         self.actual_main_menu = self.main_menu
 
-        self.linea = pygame.image.load(str(ASSETS_DIR/ "linea.png")).convert_alpha()
+        self.linea = load_image("images/pause/linea.png")
         self.linea_rect = self.linea.get_rect()
 
     def render(self, surface):
@@ -65,7 +60,7 @@ class pause_state:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  
                     if self.resume_rect.collidepoint(event.pos):
-                        return "play"
+                        return "resume"
                     
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
