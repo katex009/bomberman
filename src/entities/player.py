@@ -23,6 +23,13 @@ class Player:
         self.animation_speed = 0.1
         self.is_moving = False
 
+        self.remote_bombs_remaining = 0
+        self.skull_curse_time = 0.0
+        self.skull_speed_change_timer = 0.0
+        self.skull_auto_bomb_cooldown = 0.0
+        self.skull_last_bomb_tile = None
+        self.skull_saved_speed = None
+
         self.animacion = {
             "frente": [
                 load_player_image("player-frente.png", 50), 

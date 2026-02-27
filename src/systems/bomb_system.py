@@ -2,23 +2,34 @@ import pygame
 from entities.bomb import Bomb
 from entities.explosion import Explosion
 
+pygame.init()
+
 class BombSystem:
     
     def __init__(self):
 
         self.bombs = []
         self.explosions = []
-        self.max_bombs = 1  
+        self.base_max_bombs = 1
+        self.max_bombs = self.base_max_bombs
+
     def can_place_bomb(self):
         return len(self.bombs) < self.max_bombs
     
-    def place_bomb(self, grid_x, grid_y, fire_range=1):
+    def place_bomb(self, grid_x, grid_y, fire_range=1, is_remote=False):
 
         if self.can_place_bomb():
-            bomb = Bomb(grid_x, grid_y)
+            bomb = Bomb(grid_x, grid_y, is_remote=is_remote)
             bomb.fire_range = fire_range
             self.bombs.append(bomb)
             return True
+        return False
+    
+    def detonate_remote_bomb(self):
+        for bomb in self.bombs:
+            if bomb.is_remote and not bomb.exploded:
+                bomb.exploded = True
+                return True
         return False
     
     def update(self, dt):

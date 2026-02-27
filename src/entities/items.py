@@ -19,6 +19,12 @@ class Item:
             self.image = load_image("images/items/velocidad.png", 40)
         elif item_type == "fire":
             self.image = load_image("images/items/mas-bomba.png", 40)
+        elif item_type == "slow":
+            self.image = load_image("images/items/sandalia.png", 40)
+        elif item_type == "remote":
+            self.image = load_image("images/items/control-remoto.png", 40)
+        elif item_type == "calavera":
+            self.image = load_image("images/items/calavera.png", 40)
         
         self.rect = self.image.get_rect()
         self.rect.x = self.x + 5
@@ -34,12 +40,13 @@ class Item:
         return False
     
     def apply_effect(self, player):
+
         if self.item_type == "speed":
             if not hasattr(player, 'speed_items_collected'):
                 player.speed_items_collected = 0
             
-            if player.speed_items_collected < 3:
-                player.move_speed += 40
+            if player.speed_items_collected < 4:
+                player.move_speed += 30
                 player.speed_items_collected += 1
         
         elif self.item_type == "fire":
@@ -48,6 +55,27 @@ class Item:
             
             if player.fire_range < 3:
                 player.fire_range += 1
+
+        elif self.item_type == "slow":
+            if not hasattr(player, 'slow_items_collected'):
+                player.slow_items_collected = 0
+            
+            if player.slow_items_collected < 3:
+                player.move_speed -= 60
+                player.slow_items_collected += 1
+
+        elif self.item_type == "remote":
+            player.remote_bombs_remaining += 3
+
+        elif self.item_type == "calavera":
+            if player.skull_saved_speed is None:
+                player.skull_saved_speed = player.move_speed
+            player.skull_curse_time = max(player.skull_curse_time, 15)
+            player.skull_speed_change_timer = 0.0
+            player.skull_auto_bomb_cooldown = 0.0
+            player.skull_last_bomb_tile = None
+
+        
     
     def update(self, dt):
         pass

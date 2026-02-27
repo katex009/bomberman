@@ -5,7 +5,7 @@ pygame.init()
 
 class Bomb:
 
-    def __init__(self, grid_x, grid_y, tile_size=50):
+    def __init__(self, grid_x, grid_y, tile_size=50, is_remote=False):
 
         self.grid_x = grid_x
         self.grid_y = grid_y
@@ -16,6 +16,7 @@ class Bomb:
         
         self.timer = 3.0  
         self.exploded = False
+        self.is_remote = is_remote
         
         self.frames = [
             load_image("images/bomb/bomba.png", 28),
@@ -33,7 +34,6 @@ class Bomb:
         self.rect.y = self.y
     
     def update(self, dt):
-        self.timer -= dt
         self.animation_timer += dt
 
         if self.animation_timer >= self.animation_speed:
@@ -41,8 +41,10 @@ class Bomb:
             self.animation_timer = 0
             self.image = self.frames[self.frame]
         
-        if self.timer <= 0:
-            self.exploded = True
+        if not self.is_remote:
+            self.timer -= dt
+            if self.timer <= 0:
+                self.exploded = True
     
     def draw(self, surface):
         
