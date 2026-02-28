@@ -2,6 +2,7 @@ import pygame
 import random
 from pathlib import Path
 from entities.player import Player
+from entities.enemy import Enemy
 from entities.map import Map
 from systems.bomb_system import BombSystem
 
@@ -13,17 +14,44 @@ class play_state:
         
         self.map = Map()
         self.player = Player(x=1, y=1)
+        self.enemies = self._spawn_enemies(6)
         self.bomb_system = BombSystem()
         self.player_dead = False
+        self.player_dead_type = "bomb"
+        self.game_over_delay = 5.0
+        self.player_dead_timer = 0.0
+        self.death_sound_played = False
         
         pygame.mixer.init()
         pygame.mixer.music.load(str(Path(__file__).resolve().parents[2] / "assets" / "sounds" / "juego.mp3"))
         pygame.mixer.music.set_volume(0.5)
         pygame.mixer.music.play(-1)
+        self.player_dead_sound = pygame.mixer.Sound(
+            str(Path(__file__).resolve().parents[2] / "assets" / "sounds" / "player-muere.mp3")
+        )
+
+    def _spawn_enemies(self, count):
+        enemies = []
+        used_positions = {(self.player.grid_x, self.player.grid_y)}
+
+        while len(enemies) < count:
+            grid_x = random.randint(0, 17)
+            grid_y = random.randint(0, 10)
+            pos = (grid_x, grid_y)
+
+            if pos in used_positions:
+                continue
+
+            enemies.append(Enemy(grid_x, grid_y))
+            used_positions.add(pos)
+
+        return enemies
 
     def handle_events(self, events):
         if self.player_dead:
-            return "game_over"
+            if self.player_dead_timer >= self.game_over_delay:
+                return "game_over"
+            return None
 
         action = self.player.handle_events(events)
         
@@ -57,7 +85,20 @@ class play_state:
                     return "pause"
         return None
 
+    def _kill_player(self, death_type):
+        if self.player_dead:
+            return
+        self.player_dead = True
+        self.player_dead_type = death_type
+        self.player_dead_timer = 0.0
+        pygame.mixer.music.stop()
+        if not self.death_sound_played:
+            self.player_dead_sound.play()
+            self.death_sound_played = True
+
     def update(self, dt):
+        if self.player_dead:
+            self.player_dead_timer += dt
 
         if self.player.skull_curse_time > 0:
             self.bomb_system.max_bombs = 6
@@ -87,8 +128,27 @@ class play_state:
             self.player.skull_saved_speed = None
 
         #lo demas
-        self.player.update(dt)
+        self.player.update(dt, is_dead=self.player_dead, death_type=self.player_dead_type)
         self.bomb_system.update(dt)
+
+        for enemy in self.enemies:
+            if enemy.dead:
+                continue
+            if any(
+                not exp.finished
+                and exp.grid_x == enemy.grid_x
+                and exp.grid_y == enemy.grid_y
+                for exp in self.bomb_system.explosions
+            ):
+                enemy.kill()
+
+        for enemy in self.enemies:
+            enemy.update(dt)
+
+        self.enemies = [enemy for enemy in self.enemies if not enemy.dead_finished]
+
+        if not self.player_dead and any(self.player.rect.colliderect(enemy.rect) for enemy in self.enemies if not enemy.dead):
+            self._kill_player("normal")
 
         if any(
             not exp.finished
@@ -96,9 +156,11 @@ class play_state:
             and exp.grid_y == self.player.grid_y
             for exp in self.bomb_system.explosions
         ):
-            self.player_dead = True
+            self._kill_player("bomb")
 
     def render(self, surface):
         self.map.draw(surface)
         self.bomb_system.draw(surface)
+        for enemy in self.enemies:
+            enemy.draw(surface)
         self.player.draw(surface)

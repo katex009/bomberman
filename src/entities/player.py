@@ -1,5 +1,5 @@
 import pygame
-from utils.asset import load_player_image
+from utils.asset import load_player_image, load_image
 
 pygame.init()
 
@@ -30,6 +30,7 @@ class Player:
         self.skull_last_bomb_tile = None
         self.skull_saved_speed = None
 
+        
         self.animacion = {
             "frente": [
                 load_player_image("player-frente.png", 50), 
@@ -52,10 +53,46 @@ class Player:
                 load_player_image("player-lado-der3.png", 50)]
         }
         
+        self.animacion_dead_bomb = [
+            load_image("images/player_dead/player-dead1.png", 50),
+            load_image("images/player_dead/player-dead2.png", 50),
+            load_image("images/player_dead/player-dead3.png", 50),
+            load_image("images/player_dead/player-dead4.png", 50),
+            load_image("images/player_dead/player-dead6.png", 50),
+            load_image("images/player_dead/player-dead7.png", 50),
+            load_image("images/player_dead/player-dead8.png", 50),
+            load_image("images/player_dead/player-dead9.png", 50),
+            load_image("images/player_dead/player-dead10.png", 50),
+            load_image("images/player_dead/player-dead11.png", 50)
+        ]
+
+        self.animacion_dead_normal = [
+            load_image("images/player_dead/player-dead-nor.png", 50),
+            load_image("images/player_dead/player-dead-nor2.png", (50, 55)),
+            load_image("images/player_dead/player-dead-nor5.png", (50, 66)),
+            load_image("images/player_dead/player-dead-nor6.png", (50, 66)),
+            load_image("images/player_dead/player-dead-nor3.png", 50),
+            load_image("images/player_dead/player-dead-nor4.png", 50),
+            load_image("images/player_dead/player-dead-nor3.png", 50),
+            load_image("images/player_dead/player-dead-nor4.png", 50),
+            load_image("images/player_dead/player-dead-nor3.png", 50),
+            load_image("images/player_dead/player-dead-nor4.png", 50)
+        ]
+
+        self.image_dead = self.animacion_dead_bomb[self.frame]
         self.image = self.animacion[self.direction][self.frame]
         self.rect = self.image.get_rect()
         self.rect.x = self.x
         self.rect.y = self.y
+        self.player_dead = False
+        self.dead_type = "bomb"
+        self.dead_animation_duration = 2.0
+        self.dead_animation_elapsed = 0.0
+
+    def _get_dead_animation(self):
+        if self.dead_type == "normal":
+            return self.animacion_dead_normal
+        return self.animacion_dead_bomb
 
     def move(self, dx, dy):
         self.grid_x += dx
@@ -68,10 +105,35 @@ class Player:
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
+                    
                     return "place_bomb"  
         return None
 
-    def update(self, dt):
+    def update(self, dt, is_dead=False, death_type="bomb"):
+        if is_dead:
+            if not self.player_dead:
+                self.player_dead = True
+                self.dead_type = death_type
+                self.frame = 0
+                self.dead_animation_elapsed = 0.0
+                dead_animation = self._get_dead_animation()
+                self.image_dead = dead_animation[self.frame]
+
+            dead_animation = self._get_dead_animation()
+            self.dead_animation_elapsed = min(
+                self.dead_animation_elapsed + dt,
+                self.dead_animation_duration
+            )
+            dead_frames = len(dead_animation)
+            progress = self.dead_animation_elapsed / self.dead_animation_duration
+            dead_frame = min(int(progress * dead_frames), dead_frames - 1)
+            self.frame = dead_frame
+            self.image_dead = dead_animation[self.frame]
+
+            self.rect.x = self.x
+            self.rect.y = self.y
+            return
+
         keys = pygame.key.get_pressed()
         
         if keys[pygame.K_w]:
@@ -104,7 +166,6 @@ class Player:
         if self.x>(62+17*50):
             self.x=(62+17*50)
 
-
         self.grid_x = round(self.x / self.tile_size)
         self.grid_y = round(self.y / self.tile_size)
         
@@ -119,4 +180,7 @@ class Player:
         self.image = self.animacion[self.direction][self.frame]
 
     def draw(self, surface):
-        surface.blit(self.image, self.rect)
+        if self.player_dead:
+            surface.blit(self.image_dead, self.rect)
+        else:
+            surface.blit(self.image, self.rect)

@@ -1,5 +1,5 @@
 import pygame
-from utils.asset import load_image
+from utils.asset import load_image, load_sound
 
 pygame.init()
 
@@ -17,6 +17,11 @@ class Bomb:
         self.timer = 3.0  
         self.exploded = False
         self.is_remote = is_remote
+
+        self.bomb_sound = load_sound("sounds/colocar-bomba.mp3", 0.3)
+        self.bomb_exp_spund = load_sound("sounds/bomba-explota.mp3", 0.5)
+        self.explosion_sound_played = False
+        self.bomb_sound.play()
         
         self.frames = [
             load_image("images/bomb/bomba.png", 28),
@@ -35,16 +40,22 @@ class Bomb:
     
     def update(self, dt):
         self.animation_timer += dt
+        
 
         if self.animation_timer >= self.animation_speed:
             self.frame = (self.frame + 1) % 3
             self.animation_timer = 0
             self.image = self.frames[self.frame]
+            
         
         if not self.is_remote:
             self.timer -= dt
             if self.timer <= 0:
                 self.exploded = True
+
+        if self.exploded and not self.explosion_sound_played:
+            self.bomb_exp_spund.play()
+            self.explosion_sound_played = True
     
     def draw(self, surface):
         

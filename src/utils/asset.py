@@ -7,16 +7,20 @@ ASSETS_DIR = BASE_DIR / "assets"
 _image_cache = {}
 _sound_cache = {}
 
-def load_image(path: str, size: int | None = None) -> pygame.Surface:
+def load_image(path: str, size: int | tuple[int, int] | None = None) -> pygame.Surface:
+    cache_key = (path, size)
 
-    if path not in _image_cache:
+    if cache_key not in _image_cache:
         image = pygame.image.load(str(ASSETS_DIR / path)).convert_alpha()
 
         if size:
-            image = pygame.transform.scale(image, (size, size))
+            if isinstance(size, tuple):
+                image = pygame.transform.scale(image, size)
+            else:
+                image = pygame.transform.scale(image, (size, size))
             
-        _image_cache[path] = image
-    return _image_cache[path]
+        _image_cache[cache_key] = image
+    return _image_cache[cache_key]
 
 def load_sound(path: str, volume: float = 1.0) -> pygame.mixer.Sound:
 
