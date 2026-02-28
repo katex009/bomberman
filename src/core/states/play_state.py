@@ -14,6 +14,7 @@ class play_state:
         self.map = Map()
         self.player = Player(x=1, y=1)
         self.bomb_system = BombSystem()
+        self.player_dead = False
         
         pygame.mixer.init()
         pygame.mixer.music.load(str(Path(__file__).resolve().parents[2] / "assets" / "sounds" / "juego.mp3"))
@@ -21,6 +22,9 @@ class play_state:
         pygame.mixer.music.play(-1)
 
     def handle_events(self, events):
+        if self.player_dead:
+            return "game_over"
+
         action = self.player.handle_events(events)
         
         if action == "place_bomb":
@@ -85,6 +89,14 @@ class play_state:
         #lo demas
         self.player.update(dt)
         self.bomb_system.update(dt)
+
+        if any(
+            not exp.finished
+            and exp.grid_x == self.player.grid_x
+            and exp.grid_y == self.player.grid_y
+            for exp in self.bomb_system.explosions
+        ):
+            self.player_dead = True
 
     def render(self, surface):
         self.map.draw(surface)

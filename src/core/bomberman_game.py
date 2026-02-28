@@ -3,6 +3,7 @@ import pygame
 from core.states.menu_state import menu_state
 from core.states.play_state import play_state
 from core.states.pause_state import pause_state
+from core.states.game_over_state import game_over_state
 
 pygame.init()
 
@@ -22,9 +23,8 @@ class BombermanGame(GameBase):
         
         next_state = self.state.handle_events(events)
         if next_state == "play":
-            pygame.mixer.music.stop()  
-            if self.play_state_instance is None:
-                self.play_state_instance = play_state()  
+            pygame.mixer.music.stop()
+            self.play_state_instance = play_state()
             self.state = self.play_state_instance
         elif next_state == "pause":
             pygame.mixer.music.pause()
@@ -35,7 +35,15 @@ class BombermanGame(GameBase):
             self.state = self.previous_state
         elif next_state == "menu":
             pygame.mixer.music.stop()
+            self.play_state_instance = None
             self.state = menu_state()
+        elif next_state in ("game_over", "game over"):
+            pygame.mixer.music.stop()
+            self.state = game_over_state()
+        elif next_state == "restart":
+            pygame.mixer.music.stop()
+            self.play_state_instance = play_state()
+            self.state = self.play_state_instance
 
 
     def update(self, dt):

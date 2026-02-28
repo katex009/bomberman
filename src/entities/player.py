@@ -5,13 +5,13 @@ pygame.init()
 
 class Player:
     def __init__(self, x=0, y=0):
-        
-        self.grid_x = x
-        self.grid_y = y
+
+        self.grid_x =x
+        self.grid_y =y
         self.tile_size = 50
         
-        self.x = self.grid_x * self.tile_size
-        self.y = self.grid_y * self.tile_size
+        self.x = 62 + self.grid_x * self.tile_size
+        self.y = 156 + self.grid_y * self.tile_size
         
         self.target_x = self.x
         self.target_y = self.y
@@ -93,7 +93,18 @@ class Player:
         else:
             self.is_moving = False
             self.frame = 0
-        
+            
+        ###########################LIMITACION DE BORDES
+        if self.y<156:
+            self.y=156
+        if self.y>(156+10*50):
+            self.y=(156+10*50)
+        if self.x<62:
+            self.x=62
+        if self.x>(62+17*50):
+            self.x=(62+17*50)
+
+
         self.grid_x = round(self.x / self.tile_size)
         self.grid_y = round(self.y / self.tile_size)
         

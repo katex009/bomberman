@@ -39,7 +39,7 @@ class TestGame:
             Item(10, 10, item_type="fire"),
             Item(8, 10, item_type="slow"),
             Item(12, 5, item_type="slow"),
-            Item(14, 14, item_type="remote"),
+            Item(13, 13, item_type="remote"),
             Item(6, 12, item_type="calavera")
         ]
     
