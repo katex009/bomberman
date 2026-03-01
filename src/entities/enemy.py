@@ -6,18 +6,22 @@ pygame.init()
 
 
 class Enemy:
-    def __init__(self, grid_x, grid_y, tile_size=32):
+    def __init__(self, grid_x, grid_y, tile_size=50):
         self.grid_x = grid_x
         self.grid_y = grid_y
         self.tile_size = tile_size
+        self.map_origin_x = 62
+        self.map_origin_y = 168
+        self.sprite_size = 32
+        self.sprite_offset = (self.tile_size - self.sprite_size) // 2
 
-        self.x = 62 + self.grid_x * self.tile_size
-        self.y = 156 + self.grid_y * self.tile_size
+        self.x = self.map_origin_x + self.grid_x * self.tile_size + self.sprite_offset
+        self.y = self.map_origin_y + self.grid_y * self.tile_size + self.sprite_offset
 
-        self.min_x = 62
-        self.max_x = 62 + 17 * self.tile_size
-        self.min_y = 156
-        self.max_y = 156 + 10 * self.tile_size
+        self.min_x = self.map_origin_x + self.sprite_offset
+        self.max_x = self.map_origin_x + 17 * self.tile_size + self.sprite_offset
+        self.min_y = self.map_origin_y + self.sprite_offset
+        self.max_y = self.map_origin_y + 10 * self.tile_size + self.sprite_offset
 
         self.move_speed = 50
         self.is_moving = False
@@ -39,32 +43,32 @@ class Enemy:
 
         self.animacion = {
             "down": [
-                load_image("images/enemies/enemy1.png", 32),
-                load_image("images/enemies/enemy2.png", 32),
-                load_image("images/enemies/enemy3.png", 32),
+                load_image("images/enemies/enemy1.png", self.sprite_size),
+                load_image("images/enemies/enemy2.png", self.sprite_size),
+                load_image("images/enemies/enemy3.png", self.sprite_size),
             ],
             "up": [
-                load_image("images/enemies/enemy1.png", 32),
-                load_image("images/enemies/enemy2.png", 32),
-                load_image("images/enemies/enemy3.png", 32),
+                load_image("images/enemies/enemy1.png", self.sprite_size),
+                load_image("images/enemies/enemy2.png", self.sprite_size),
+                load_image("images/enemies/enemy3.png", self.sprite_size),
             ],
             "left": [
-                load_image("images/enemies/enemy1.png", 32),
-                load_image("images/enemies/enemy2.png", 32),
-                load_image("images/enemies/enemy3.png", 32),
+                load_image("images/enemies/enemy1.png", self.sprite_size),
+                load_image("images/enemies/enemy2.png", self.sprite_size),
+                load_image("images/enemies/enemy3.png", self.sprite_size),
             ],
             "right": [
-                load_image("images/enemies/enemy1.png", 32),
-                load_image("images/enemies/enemy2.png", 32),
-                load_image("images/enemies/enemy3.png", 32),
+                load_image("images/enemies/enemy1.png", self.sprite_size),
+                load_image("images/enemies/enemy2.png", self.sprite_size),
+                load_image("images/enemies/enemy3.png", self.sprite_size),
             ],
         }
 
         self.animacion_dead_enemy = [
-            load_image("images/enemies/enemy-dead1.png", 32),
-            load_image("images/enemies/enemy-dead2.png", 32),
-            load_image("images/enemies/enemy-dead3.png", 32),
-            load_image("images/enemies/enemy-dead4.png", 32),
+            load_image("images/enemies/enemy-dead1.png", self.sprite_size),
+            load_image("images/enemies/enemy-dead2.png", self.sprite_size),
+            load_image("images/enemies/enemy-dead3.png", self.sprite_size),
+            load_image("images/enemies/enemy-dead4.png", self.sprite_size),
         ]
 
         self.image = self.animacion[self.direction][self.frame]
@@ -92,8 +96,8 @@ class Enemy:
         elif direction == "right":
             dx = 1
 
-        next_x = 62 + (self.grid_x + dx) * self.tile_size
-        next_y = 156 + (self.grid_y + dy) * self.tile_size
+        next_x = self.map_origin_x + (self.grid_x + dx) * self.tile_size + self.sprite_offset
+        next_y = self.map_origin_y + (self.grid_y + dy) * self.tile_size + self.sprite_offset
 
         if next_x < self.min_x or next_x > self.max_x or next_y < self.min_y or next_y > self.max_y:
             return False

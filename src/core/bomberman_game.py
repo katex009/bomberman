@@ -4,8 +4,10 @@ from core.states.menu_state import menu_state
 from core.states.play_state import play_state
 from core.states.pause_state import pause_state
 from core.states.game_over_state import game_over_state
+from core.states.final_state import final_state
 
 pygame.init()
+
 
 class BombermanGame(GameBase):
     def __init__(self, metadata):
@@ -13,14 +15,14 @@ class BombermanGame(GameBase):
         self.bg_color = (30, 30, 30)
         self.state = None
         self.previous_state = None
-        self.play_state_instance = None  
+        self.play_state_instance = None
 
     def start(self, surface):
         super().start(surface)
         self.state = menu_state()
-    
+
     def handle_events(self, events):
-        
+
         next_state = self.state.handle_events(events)
         if next_state == "play":
             pygame.mixer.music.stop()
@@ -40,20 +42,16 @@ class BombermanGame(GameBase):
         elif next_state in ("game_over", "game over"):
             pygame.mixer.music.stop()
             self.state = game_over_state()
+        elif next_state == "final":
+            pygame.mixer.music.stop()
+            self.state = final_state()
         elif next_state == "restart":
             pygame.mixer.music.stop()
             self.play_state_instance = play_state()
             self.state = self.play_state_instance
-
 
     def update(self, dt):
         self.state.update(dt)
 
     def render(self):
         self.state.render(self.surface)
-        
-
-
-
-
-

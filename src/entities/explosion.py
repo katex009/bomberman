@@ -9,9 +9,11 @@ class Explosion:
         self.grid_y = grid_y
         self.tile_size = tile_size
         self.direction = direction
+        self.map_origin_x = 62
+        self.map_origin_y = 168
         
-        self.x = self.grid_x * self.tile_size
-        self.y = self.grid_y * self.tile_size
+        self.x = self.map_origin_x + self.grid_x * self.tile_size
+        self.y = self.map_origin_y + self.grid_y * self.tile_size
         
         self.timer = 0.5  
         self.finished = False
@@ -72,8 +74,8 @@ class Explosion:
         
         self.image = self.frames[self.frame]
         self.rect = self.image.get_rect()
-        self.rect.x = self.x
-        self.rect.y = self.y
+        self.rect.x = int(self.x)
+        self.rect.y = int(self.y)
     
     def update(self, dt):
         self.timer -= dt

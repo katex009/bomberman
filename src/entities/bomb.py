@@ -10,9 +10,13 @@ class Bomb:
         self.grid_x = grid_x
         self.grid_y = grid_y
         self.tile_size = tile_size
+        self.map_origin_x = 62
+        self.map_origin_y = 168
+        self.sprite_size = 28
         
-        self.x = self.grid_x * self.tile_size
-        self.y = self.grid_y * self.tile_size
+        offset = (self.tile_size - self.sprite_size) // 2
+        self.x = self.map_origin_x + self.grid_x * self.tile_size + offset
+        self.y = self.map_origin_y + self.grid_y * self.tile_size + offset
         
         self.timer = 3.0  
         self.exploded = False
@@ -24,9 +28,9 @@ class Bomb:
         self.bomb_sound.play()
         
         self.frames = [
-            load_image("images/bomb/bomba.png", 28),
-            load_image("images/bomb/bomba2.png", 28),
-            load_image("images/bomb/bomba3.png", 28)
+            load_image("images/bomb/bomba.png", self.sprite_size),
+            load_image("images/bomb/bomba2.png", self.sprite_size),
+            load_image("images/bomb/bomba3.png", self.sprite_size)
         ]
 
         self.frame = 0
@@ -35,8 +39,8 @@ class Bomb:
         
         self.image = self.frames[self.frame]
         self.rect = self.image.get_rect()
-        self.rect.x = self.x
-        self.rect.y = self.y
+        self.rect.x = int(self.x)
+        self.rect.y = int(self.y)
     
     def update(self, dt):
         self.animation_timer += dt

@@ -9,9 +9,11 @@ class Player:
         self.grid_x =x
         self.grid_y =y
         self.tile_size = 50
+        self.map_origin_x = 62
+        self.map_origin_y = 168
         
-        self.x = 62 + self.grid_x * self.tile_size
-        self.y = 156 + self.grid_y * self.tile_size
+        self.x = self.map_origin_x + self.grid_x * self.tile_size
+        self.y = self.map_origin_y + self.grid_y * self.tile_size
         
         self.target_x = self.x
         self.target_y = self.y
@@ -97,8 +99,8 @@ class Player:
     def move(self, dx, dy):
         self.grid_x += dx
         self.grid_y += dy
-        self.target_x = self.grid_x * self.tile_size
-        self.target_y = self.grid_y * self.tile_size
+        self.target_x = self.map_origin_x + self.grid_x * self.tile_size
+        self.target_y = self.map_origin_y + self.grid_y * self.tile_size
     
     def handle_events(self, events):
         
@@ -157,17 +159,17 @@ class Player:
             self.frame = 0
             
         ###########################LIMITACION DE BORDES
-        if self.y<156:
-            self.y=156
-        if self.y>(156+10*50):
-            self.y=(156+10*50)
-        if self.x<62:
-            self.x=62
-        if self.x>(62+17*50):
-            self.x=(62+17*50)
+        min_x = self.map_origin_x
+        max_x = self.map_origin_x + 17 * self.tile_size
+        min_y = self.map_origin_y
+        max_y = self.map_origin_y + 10 * self.tile_size
+        self.x = max(min_x, min(self.x, max_x))
+        self.y = max(min_y, min(self.y, max_y))
 
-        self.grid_x = round(self.x / self.tile_size)
-        self.grid_y = round(self.y / self.tile_size)
+        self.grid_x = int(round((self.x - self.map_origin_x) / self.tile_size))
+        self.grid_y = int(round((self.y - self.map_origin_y) / self.tile_size))
+        self.grid_x = max(0, min(self.grid_x, 17))
+        self.grid_y = max(0, min(self.grid_y, 10))
         
         if self.is_moving:
             self.animation_timer += dt
@@ -175,8 +177,8 @@ class Player:
                 self.frame = (self.frame + 1) % 3
                 self.animation_timer = 0
         
-        self.rect.x = self.x
-        self.rect.y = self.y
+        self.rect.x = int(self.x)
+        self.rect.y = int(self.y)
         self.image = self.animacion[self.direction][self.frame]
 
     def draw(self, surface):
