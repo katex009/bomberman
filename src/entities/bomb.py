@@ -33,6 +33,12 @@ class Bomb:
             load_image("images/bomb/bomba3.png", self.sprite_size)
         ]
 
+        self.bomba_perforadora = [
+            load_image("images/bomb/bomba_perforadora1.png", self.sprite_size),
+            load_image("images/bomb/bomba_perforadora2.png", self.sprite_size),
+            load_image("images/bomb/bomba_perforadora3.png", self.sprite_size)
+        ]
+
         self.frame = 0
         self.animation_timer = 0
         self.animation_speed = 0.3

@@ -5,9 +5,11 @@ from entities.player import Player
 from entities.enemy import Enemy
 from entities.map import Map
 from systems.bomb_system import BombSystem
+from systems.score_system import ScoreSystem
 from utils.asset import load_image
 
 pygame.init()
+pygame.font.init()
 
 
 class play_state:
@@ -33,6 +35,14 @@ class play_state:
         self.exit_grid_pos = None
         self.exit_visible = False
         self.level_completed = False
+        self.victory_animation_timer = 0.0
+        self.victory_animation_duration = 3.0
+
+        self.level_time = 150.0
+        font_path = str(Path(__file__).resolve().parents[2] / "assets" / "fonts" / "ARCADECLASSIC.TTF")
+        self.timer_font = pygame.font.Font(font_path, 40)
+        self.score_font = pygame.font.Font(font_path, 40)
+        self.score_system = ScoreSystem()
 
         pygame.mixer.init()
         pygame.mixer.music.load(str(Path(__file__).resolve().parents[2] / "assets" / "sounds" / "juego.mp3"))
@@ -82,7 +92,7 @@ class play_state:
         self.exit_visible = True
 
     def handle_events(self, events):
-        if self.level_completed:
+        if self.level_completed and self.victory_animation_timer >= self.victory_animation_duration:
             return "final"
 
         if self.player_dead:
@@ -91,8 +101,9 @@ class play_state:
             return None
 
         if self.exit_visible and self.exit_grid_pos == (self.player.grid_x, self.player.grid_y):
-            self.level_completed = True
-            return "final"
+            if not self.level_completed:
+                self.level_completed = True
+            return None
 
         action = self.player.handle_events(events)
 
@@ -138,8 +149,17 @@ class play_state:
             self.death_sound_played = True
 
     def update(self, dt):
+        if self.level_completed:
+            self.victory_animation_timer += dt
+            self.player.update(dt, is_victory=True)
+            return
+        
         if self.player_dead:
             self.player_dead_timer += dt
+        else:
+            self.level_time -= dt
+            if self.level_time <= 0:
+                self._kill_player("normal")
 
         if self.player.skull_curse_time > 0:
             self.bomb_system.max_bombs = 6
@@ -171,6 +191,7 @@ class play_state:
         self.player.update(dt, is_dead=self.player_dead, death_type=self.player_dead_type)
         self.bomb_system.update(dt)
 
+        enemies_killed_this_frame = []
         for enemy in self.enemies:
             if enemy.dead:
                 continue
@@ -181,6 +202,13 @@ class play_state:
                 for exp in self.bomb_system.explosions
             ):
                 enemy.kill()
+                enemies_killed_this_frame.append(enemy)
+        
+        if enemies_killed_this_frame:
+            for enemy in enemies_killed_this_frame:
+                self.score_system.add_enemy_kill()
+        else:
+            self.score_system.reset_multiplicador()
 
         for enemy in self.enemies:
             enemy.update(dt)
@@ -202,9 +230,13 @@ class play_state:
             self._kill_player("bomb")
 
         if not self.player_dead and self.exit_visible and self.exit_grid_pos == (self.player.grid_x, self.player.grid_y):
+            if not self.level_completed:
+                self.score_system.add_exit_bonus()
+                pygame.mixer.music.stop()
             self.level_completed = True
 
     def render(self, surface):
+
         self.map.draw(surface)
         if self.exit_visible and self.exit_rect:
             surface.blit(self.exit_image, self.exit_rect)
@@ -212,3 +244,17 @@ class play_state:
         for enemy in self.enemies:
             enemy.draw(surface)
         self.player.draw(surface)
+        
+        minutes = int(max(0, self.level_time) // 60)
+        seconds = int(max(0, self.level_time) % 60)
+        timer_text = f"{minutes:02d}  {seconds:02d}"
+        timer_surface = self.timer_font.render(timer_text, True, (255, 255, 255))
+        surface.blit(timer_surface, (188, 45))
+
+        font = pygame.font.Font(None, 36)
+        dos_puntos = font.render(":", True, (255, 255, 255))
+        surface.blit(dos_puntos, (230, 55))
+        
+        score_text = f"{self.score_system.get_total_score():07d}"
+        score_surface = self.score_font.render(score_text, True, (255, 255, 255))
+        surface.blit(score_surface, (778, 45))

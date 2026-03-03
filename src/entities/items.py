@@ -30,12 +30,14 @@ class Item:
         self.rect.x = self.x + 5
         self.rect.y = self.y + 5
     
-    def check_collision(self, player):
+    def check_collision(self, player, score_system=None):
 
         if self.grid_x == player.grid_x and self.grid_y == player.grid_y:
             if not self.collected:
                 self.collected = True
                 self.apply_effect(player)
+                if score_system:
+                    score_system.add_item_collected()
                 return True
         return False
     

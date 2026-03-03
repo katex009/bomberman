@@ -9,7 +9,7 @@ class pause_state:
         self.previous_state = previous_state
 
         self.boton_sound = load_sound("sounds/sonido-letras.mp3", volume = 0.5)
-        self.hover_played = {"resume": False, "main_menu": False}
+        self.hover_played = {"resume": False, "main_menu": False, "options": False}
 
         self.pause = load_image("images/pause/pause.png")
         self.pause_rect = self.pause.get_rect()
@@ -38,6 +38,15 @@ class pause_state:
         self.linea = load_image("images/pause/linea.png")
         self.linea_rect = self.linea.get_rect()
 
+        self.options_image = load_image("images/pause/options.png", (261.3, 49))
+        self.options_rect = self.options_image.get_rect()
+
+        self.options_rect.x = 380
+        self.options_rect.y = 385
+
+        self.options_image2 = load_image("images/pause/options2.png", (261.3, 49))
+        self.actual_options_image = self.options_image
+
     def render(self, surface):
         self.previous_state.render(surface)
 
@@ -49,6 +58,7 @@ class pause_state:
         surface.blit(self.linea, self.linea_rect)
         surface.blit(self.actual_resume, self.resume_rect)
         surface.blit(self.actual_main_menu, self.main_menu_rect)
+        surface.blit(self.actual_options_image, self.options_rect)
     
     def handle_events(self, events):
         for event in events:
@@ -67,6 +77,13 @@ class pause_state:
                 if event.button == 1:  
                     if self.main_menu_rect.collidepoint(event.pos):
                         return "menu"
+                    
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:  
+                    if self.options_rect.collidepoint(event.pos):
+                        return "options"
+
         return None
 
     def update(self, dt):
@@ -89,6 +106,12 @@ class pause_state:
         else:
             self.actual_main_menu = self.main_menu
             self.hover_played["main_menu"] = False
-
-    
-
+        
+        if self.options_rect.collidepoint(mouse_pos):
+            self.actual_options_image = self.options_image2
+            if not self.hover_played["options"]:
+                    self.boton_sound.play()
+                    self.hover_played["options"] = True
+        else:
+            self.actual_options_image = self.options_image
+            self.hover_played["options"] = False

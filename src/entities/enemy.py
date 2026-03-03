@@ -116,8 +116,10 @@ class Enemy:
         for direction in directions:
             if self._set_next_target(direction):
                 self.run_steps_remaining = random.randint(3, 7)
-                return
+                return True
         self.is_moving = False
+        self.run_steps_remaining = 1
+        return False
 
     def update(self, dt):
         if self.dead:
@@ -136,10 +138,16 @@ class Enemy:
             return
 
         if not self.is_moving:
-            if self.run_steps_remaining > 0 and self._set_next_target(self.direction):
-                pass
+            if self.run_steps_remaining > 0:
+                if not self._set_next_target(self.direction):
+                    self._choose_new_direction()
             else:
-                self._choose_new_direction()
+                if not self._choose_new_direction():
+                    directions = ["up", "down", "left", "right"]
+                    for direction in directions:
+                        if self._set_next_target(direction):
+                            self.run_steps_remaining = 1
+                            break
 
         dx = self.target_x - self.x
         dy = self.target_y - self.y
@@ -157,6 +165,11 @@ class Enemy:
             else:
                 self.x += (dx / distance) * step
                 self.y += (dy / distance) * step
+                
+                current_grid_x = round((self.x - self.map_origin_x - self.sprite_offset) / self.tile_size)
+                current_grid_y = round((self.y - self.map_origin_y - self.sprite_offset) / self.tile_size)
+                self.grid_x = max(0, min(current_grid_x, 17))
+                self.grid_y = max(0, min(current_grid_y, 10))
 
         self.animation_timer += dt
         if self.animation_timer >= self.animation_speed:

@@ -15,7 +15,7 @@ metadata = (
     .with_title("Bomberman")
     .with_description("Juego arcade estilo Bomberman")
     .with_release_date("2026")
-    .with_group_number(1)
+    .with_group_number(7)
     .add_tag("Arcade")
     .add_author("Katherin Martinez y Rene Franco")
 )

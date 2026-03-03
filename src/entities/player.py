@@ -1,5 +1,5 @@
 import pygame
-from utils.asset import load_player_image, load_image
+from utils.asset import load_player_image, load_image, load_sound
 
 pygame.init()
 
@@ -31,6 +31,7 @@ class Player:
         self.skull_auto_bomb_cooldown = 0.0
         self.skull_last_bomb_tile = None
         self.skull_saved_speed = None
+        self.fire_range = 1
 
         
         self.animacion = {
@@ -90,6 +91,17 @@ class Player:
         self.dead_type = "bomb"
         self.dead_animation_duration = 2.0
         self.dead_animation_elapsed = 0.0
+        
+        self.player_victory = False
+        self.victory_frames = [
+            load_image("images/player/player_gana.png", 50),
+            load_image("images/player/player_gana2.png", 66)
+        ]
+        self.victory_frame = 0
+        self.victory_animation_speed = 0.3
+        self.victory_animation_elapsed = 0.0
+        self.victory_sound = load_sound("sounds/player_gana.mp3", volume=0.5)
+        self.victory_sound_played = False
 
     def _get_dead_animation(self):
         if self.dead_type == "normal":
@@ -111,7 +123,23 @@ class Player:
                     return "place_bomb"  
         return None
 
-    def update(self, dt, is_dead=False, death_type="bomb"):
+    def update(self, dt, is_dead=False, death_type="bomb", is_victory=False):
+        if is_victory:
+            if not self.player_victory:
+                self.player_victory = True
+                self.victory_frame = 0
+                self.victory_animation_elapsed = 0.0
+                if not self.victory_sound_played:
+                    self.victory_sound.play()
+                    self.victory_sound_played = True
+            
+            if self.victory_frame < 1:
+                self.victory_animation_elapsed += dt
+                if self.victory_animation_elapsed >= self.victory_animation_speed:
+                    self.victory_frame = 1
+                    self.victory_animation_elapsed = 0.0
+            return
+        
         if is_dead:
             if not self.player_dead:
                 self.player_dead = True
@@ -182,7 +210,9 @@ class Player:
         self.image = self.animacion[self.direction][self.frame]
 
     def draw(self, surface):
-        if self.player_dead:
+        if self.player_victory:
+            surface.blit(self.victory_frames[self.victory_frame], self.rect)
+        elif self.player_dead:
             surface.blit(self.image_dead, self.rect)
         else:
             surface.blit(self.image, self.rect)
