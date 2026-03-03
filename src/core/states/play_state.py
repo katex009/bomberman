@@ -4,6 +4,7 @@ from pathlib import Path
 from entities.player import Player
 from entities.enemy import Enemy
 from entities.map import Map
+from entities.items import Item
 from systems.bomb_system import BombSystem
 from systems.score_system import ScoreSystem
 from utils.asset import load_image
@@ -17,16 +18,17 @@ class play_state:
     def __init__(self):
 
         self.map = Map()
-        self.player = Player(x=1, y=1)
+        self.player = Player(x=0, y=0)
         self.enemies = self._spawn_enemies(6)
-        self.bomb_system = BombSystem()
+        self.bomb_system = BombSystem(map_ref=self.map)
+        self.items = []
         self.player_dead = False
         self.player_dead_type = "bomb"
         self.game_over_delay = 5.0
         self.player_dead_timer = 0.0
         self.death_sound_played = False
 
-        self.map_origin_x = 62
+        self.map_origin_x = 87
         self.map_origin_y = 168
         self.exit_size = 24
         self.exit_padding = (self.map.tile_size - self.exit_size) // 2
@@ -38,7 +40,7 @@ class play_state:
         self.victory_animation_timer = 0.0
         self.victory_animation_duration = 3.0
 
-        self.level_time = 150.0
+        self.level_time = 180.0
         font_path = str(Path(__file__).resolve().parents[2] / "assets" / "fonts" / "ARCADECLASSIC.TTF")
         self.timer_font = pygame.font.Font(font_path, 40)
         self.score_font = pygame.font.Font(font_path, 40)
@@ -53,19 +55,25 @@ class play_state:
         )
 
     def _spawn_enemies(self, count):
-        enemies = []
-        used_positions = {(self.player.grid_x, self.player.grid_y)}
-
-        while len(enemies) < count:
-            grid_x = random.randint(0, 17)
-            grid_y = random.randint(0, 10)
+        def is_valid_enemy_spawn(grid_x, grid_y, used_positions):
             pos = (grid_x, grid_y)
-
             if pos in used_positions:
-                continue
+                return False
+            return not self.map.is_blocked(grid_x, grid_y)
 
+        enemies = []
+        used_positions = {(self.player.grid_x, self.player.grid_y), (0, 0), (1, 0), (0, 1)}
+
+        valid_positions = []
+        for grid_y in range(self.map.tiles_y):
+            for grid_x in range(self.map.tiles_x):
+                if is_valid_enemy_spawn(grid_x, grid_y, used_positions):
+                    valid_positions.append((grid_x, grid_y))
+
+        random.shuffle(valid_positions)
+
+        for grid_x, grid_y in valid_positions[:count]:
             enemies.append(Enemy(grid_x, grid_y))
-            used_positions.add(pos)
 
         return enemies
 
@@ -115,7 +123,8 @@ class play_state:
                     self.player.grid_x,
                     self.player.grid_y,
                     fire_range,
-                    is_remote=use_remote
+                    is_remote=use_remote,
+                    is_piercing=self.player.has_piercing_bombs
                 )
                 if bomb_placed and use_remote:
                     self.player.remote_bombs_remaining -= 1
@@ -151,8 +160,13 @@ class play_state:
     def update(self, dt):
         if self.level_completed:
             self.victory_animation_timer += dt
-            self.player.update(dt, is_victory=True)
+            self.player.update(dt, is_victory=True, map_ref=self.map, bomb_system=self.bomb_system)
             return
+
+        self.bomb_system.base_max_bombs = 1 + self.player.extra_bombs
+        if self.player.piercing_bomb_time > 0:
+            self.player.piercing_bomb_time = max(0.0, self.player.piercing_bomb_time - dt)
+            self.player.has_piercing_bombs = self.player.piercing_bomb_time > 0
         
         if self.player_dead:
             self.player_dead_timer += dt
@@ -180,7 +194,8 @@ class play_state:
                         self.player.grid_x,
                         self.player.grid_y,
                         fire_range,
-                        is_remote=False)
+                        is_remote=False,
+                        is_piercing=self.player.has_piercing_bombs)
 
                 self.player.skull_last_bomb_tile = current_tile
 
@@ -188,8 +203,20 @@ class play_state:
             self.player.move_speed = self.player.skull_saved_speed
             self.player.skull_saved_speed = None
 
-        self.player.update(dt, is_dead=self.player_dead, death_type=self.player_dead_type)
+        self.player.update(dt, is_dead=self.player_dead, death_type=self.player_dead_type, map_ref=self.map, bomb_system=self.bomb_system)
         self.bomb_system.update(dt)
+        
+        for block in self.map.destructible_blocks:
+            block.update(dt)
+            if block.destroyed and not block.score_given:
+                self.score_system.add_block_destroyed()
+                block.score_given = True
+            if block.destroyed and not block.item_dropped and block.item_type:
+                self.items.append(Item(block.grid_x, block.grid_y, block.item_type))
+                block.item_dropped = True
+        
+        for item in self.items:
+            item.check_collision(self.player, self.score_system)
 
         enemies_killed_this_frame = []
         for enemy in self.enemies:
@@ -211,7 +238,7 @@ class play_state:
             self.score_system.reset_multiplicador()
 
         for enemy in self.enemies:
-            enemy.update(dt)
+            enemy.update(dt, map_ref=self.map, bomb_system=self.bomb_system)
 
         if not self.exit_visible and not any(not enemy.dead for enemy in self.enemies):
             self._spawn_exit()
@@ -240,6 +267,10 @@ class play_state:
         self.map.draw(surface)
         if self.exit_visible and self.exit_rect:
             surface.blit(self.exit_image, self.exit_rect)
+        
+        for item in self.items:
+            item.draw(surface)
+        
         self.bomb_system.draw(surface)
         for enemy in self.enemies:
             enemy.draw(surface)
@@ -258,3 +289,7 @@ class play_state:
         score_text = f"{self.score_system.get_total_score():07d}"
         score_surface = self.score_font.render(score_text, True, (255, 255, 255))
         surface.blit(score_surface, (778, 45))
+
+        life_text = "0" if self.player_dead else "1"
+        life_surface = self.score_font.render(life_text, True, (255, 255, 255))
+        surface.blit(life_surface, (455.3, 45.2))

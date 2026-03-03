@@ -9,7 +9,7 @@ class Player:
         self.grid_x =x
         self.grid_y =y
         self.tile_size = 50
-        self.map_origin_x = 62
+        self.map_origin_x = 87
         self.map_origin_y = 168
         
         self.x = self.map_origin_x + self.grid_x * self.tile_size
@@ -17,7 +17,7 @@ class Player:
         
         self.target_x = self.x
         self.target_y = self.y
-        self.move_speed = 200 
+        self.move_speed = 150 
         
         self.direction = "frente"
         self.frame = 0
@@ -26,6 +26,9 @@ class Player:
         self.is_moving = False
 
         self.remote_bombs_remaining = 0
+        self.extra_bombs = 0
+        self.has_piercing_bombs = False
+        self.piercing_bomb_time = 0.0
         self.skull_curse_time = 0.0
         self.skull_speed_change_timer = 0.0
         self.skull_auto_bomb_cooldown = 0.0
@@ -123,7 +126,7 @@ class Player:
                     return "place_bomb"  
         return None
 
-    def update(self, dt, is_dead=False, death_type="bomb", is_victory=False):
+    def update(self, dt, is_dead=False, death_type="bomb", is_victory=False, map_ref=None, bomb_system=None):
         if is_victory:
             if not self.player_victory:
                 self.player_victory = True
@@ -166,21 +169,44 @@ class Player:
 
         keys = pygame.key.get_pressed()
         
+        old_x = self.x
+        old_y = self.y
+        
         if keys[pygame.K_w]:
             self.direction = "atras"
-            self.y -= self.move_speed * dt
+            new_y = self.y - self.move_speed * dt
+            new_grid_y = int((new_y - self.map_origin_y) / self.tile_size)
+            center_grid_x = int((self.x + self.tile_size / 2 - self.map_origin_x) / self.tile_size)
+            
+            if not (map_ref and map_ref.is_blocked_with_bombs(center_grid_x, new_grid_y, bomb_system)):
+                self.y = new_y
             self.is_moving = True
         elif keys[pygame.K_s]:
             self.direction = "frente"
-            self.y += self.move_speed * dt
+            new_y = self.y + self.move_speed * dt
+            new_grid_y = int((new_y + self.tile_size - 1 - self.map_origin_y) / self.tile_size)
+            center_grid_x = int((self.x + self.tile_size / 2 - self.map_origin_x) / self.tile_size)
+            
+            if not (map_ref and map_ref.is_blocked_with_bombs(center_grid_x, new_grid_y, bomb_system)):
+                self.y = new_y
             self.is_moving = True
         elif keys[pygame.K_a]:
             self.direction = "izq"
-            self.x -= self.move_speed * dt
+            new_x = self.x - self.move_speed * dt
+            new_grid_x = int((new_x - self.map_origin_x) / self.tile_size)
+            center_grid_y = int((self.y + self.tile_size / 2 - self.map_origin_y) / self.tile_size)
+            
+            if not (map_ref and map_ref.is_blocked_with_bombs(new_grid_x, center_grid_y, bomb_system)):
+                self.x = new_x
             self.is_moving = True
         elif keys[pygame.K_d]:
             self.direction = "der"
-            self.x += self.move_speed * dt
+            new_x = self.x + self.move_speed * dt
+            new_grid_x = int((new_x + self.tile_size - 1 - self.map_origin_x) / self.tile_size)
+            center_grid_y = int((self.y + self.tile_size / 2 - self.map_origin_y) / self.tile_size)
+            
+            if not (map_ref and map_ref.is_blocked_with_bombs(new_grid_x, center_grid_y, bomb_system)):
+                self.x = new_x
             self.is_moving = True
         else:
             self.is_moving = False
@@ -188,7 +214,7 @@ class Player:
             
         ###########################LIMITACION DE BORDES
         min_x = self.map_origin_x
-        max_x = self.map_origin_x + 17 * self.tile_size
+        max_x = self.map_origin_x + 16 * self.tile_size
         min_y = self.map_origin_y
         max_y = self.map_origin_y + 10 * self.tile_size
         self.x = max(min_x, min(self.x, max_x))
@@ -196,7 +222,7 @@ class Player:
 
         self.grid_x = int(round((self.x - self.map_origin_x) / self.tile_size))
         self.grid_y = int(round((self.y - self.map_origin_y) / self.tile_size))
-        self.grid_x = max(0, min(self.grid_x, 17))
+        self.grid_x = max(0, min(self.grid_x, 16))
         self.grid_y = max(0, min(self.grid_y, 10))
         
         if self.is_moving:

@@ -10,7 +10,7 @@ class Bomb:
         self.grid_x = grid_x
         self.grid_y = grid_y
         self.tile_size = tile_size
-        self.map_origin_x = 62
+        self.map_origin_x = 87
         self.map_origin_y = 168
         self.sprite_size = 28
         

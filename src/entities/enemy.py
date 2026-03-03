@@ -10,7 +10,7 @@ class Enemy:
         self.grid_x = grid_x
         self.grid_y = grid_y
         self.tile_size = tile_size
-        self.map_origin_x = 62
+        self.map_origin_x = 87
         self.map_origin_y = 168
         self.sprite_size = 32
         self.sprite_offset = (self.tile_size - self.sprite_size) // 2
@@ -19,7 +19,7 @@ class Enemy:
         self.y = self.map_origin_y + self.grid_y * self.tile_size + self.sprite_offset
 
         self.min_x = self.map_origin_x + self.sprite_offset
-        self.max_x = self.map_origin_x + 17 * self.tile_size + self.sprite_offset
+        self.max_x = self.map_origin_x + 16 * self.tile_size + self.sprite_offset
         self.min_y = self.map_origin_y + self.sprite_offset
         self.max_y = self.map_origin_y + 10 * self.tile_size + self.sprite_offset
 
@@ -84,7 +84,7 @@ class Enemy:
         self.frame = 0
         self.image = self.animacion_dead_enemy[self.frame]
 
-    def _set_next_target(self, direction):
+    def _set_next_target(self, direction, map_ref=None, bomb_system=None):
         dx = 0
         dy = 0
         if direction == "up":
@@ -96,32 +96,37 @@ class Enemy:
         elif direction == "right":
             dx = 1
 
-        next_x = self.map_origin_x + (self.grid_x + dx) * self.tile_size + self.sprite_offset
-        next_y = self.map_origin_y + (self.grid_y + dy) * self.tile_size + self.sprite_offset
+        next_grid_x = self.grid_x + dx
+        next_grid_y = self.grid_y + dy
+        next_x = self.map_origin_x + next_grid_x * self.tile_size + self.sprite_offset
+        next_y = self.map_origin_y + next_grid_y * self.tile_size + self.sprite_offset
 
         if next_x < self.min_x or next_x > self.max_x or next_y < self.min_y or next_y > self.max_y:
             return False
+        
+        if map_ref and map_ref.is_blocked_with_bombs(next_grid_x, next_grid_y, bomb_system):
+            return False
 
-        self.target_grid_x = self.grid_x + dx
-        self.target_grid_y = self.grid_y + dy
+        self.target_grid_x = next_grid_x
+        self.target_grid_y = next_grid_y
         self.target_x = next_x
         self.target_y = next_y
         self.direction = direction
         self.is_moving = True
         return True
 
-    def _choose_new_direction(self):
+    def _choose_new_direction(self, map_ref=None, bomb_system=None):
         directions = ["up", "down", "left", "right"]
         random.shuffle(directions)
         for direction in directions:
-            if self._set_next_target(direction):
+            if self._set_next_target(direction, map_ref, bomb_system):
                 self.run_steps_remaining = random.randint(3, 7)
                 return True
         self.is_moving = False
         self.run_steps_remaining = 1
         return False
 
-    def update(self, dt):
+    def update(self, dt, map_ref=None, bomb_system=None):
         if self.dead:
             self.dead_animation_elapsed = min(
                 self.dead_animation_elapsed + dt,
@@ -139,13 +144,13 @@ class Enemy:
 
         if not self.is_moving:
             if self.run_steps_remaining > 0:
-                if not self._set_next_target(self.direction):
-                    self._choose_new_direction()
+                if not self._set_next_target(self.direction, map_ref, bomb_system):
+                    self._choose_new_direction(map_ref, bomb_system)
             else:
-                if not self._choose_new_direction():
+                if not self._choose_new_direction(map_ref, bomb_system):
                     directions = ["up", "down", "left", "right"]
                     for direction in directions:
-                        if self._set_next_target(direction):
+                        if self._set_next_target(direction, map_ref, bomb_system):
                             self.run_steps_remaining = 1
                             break
 

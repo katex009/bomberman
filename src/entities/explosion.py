@@ -9,7 +9,7 @@ class Explosion:
         self.grid_y = grid_y
         self.tile_size = tile_size
         self.direction = direction
-        self.map_origin_x = 62
+        self.map_origin_x = 87
         self.map_origin_y = 168
         
         self.x = self.map_origin_x + self.grid_x * self.tile_size
