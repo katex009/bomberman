@@ -7,9 +7,9 @@ pygame.init()
 class DestructibleBlock:
     
     ITEM_PROBABILITIES = {
-        "speed": 0.06,      
+        "speed": 0.07,      
         "fire": 0.1,       
-        "slow": 0.05,       
+        "slow": 0.04,       
         "remote": 0.03,     
         "calavera": 0.02,   
         "perforadora": 0.03,
