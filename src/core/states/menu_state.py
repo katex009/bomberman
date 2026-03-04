@@ -6,8 +6,9 @@ pygame.init()
 
 class menu_state:
     
-    def __init__(self):
+    def __init__(self, game):
 
+        self.game = game
         self.boton_sound = load_sound("sounds/sonido-letras.mp3", volume=0.5)
         self.hover_played = {"start": False, "exit": False, "options": False}
 
@@ -97,5 +98,5 @@ class menu_state:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  
                     if self.exit_rect.collidepoint(event.pos):
-                        pygame.quit()
+                        self.game.stop()
         return None
