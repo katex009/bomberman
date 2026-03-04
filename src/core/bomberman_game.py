@@ -23,7 +23,7 @@ class BombermanGame(GameBase):
 
     def start(self, surface):
         super().start(surface)
-        self.state = menu_state()
+        self.state = menu_state(self)
 
     def handle_events(self, events):
 
@@ -63,7 +63,7 @@ class BombermanGame(GameBase):
                 pygame.mixer.music.stop()
                 self.play_state_instance = None
                 self.pause_state_instance = None
-                self.state = menu_state()
+                self.state = menu_state(self)
         elif next_state in ("game_over", "game over"):
             pygame.mixer.music.stop()
             self.state = game_over_state()
