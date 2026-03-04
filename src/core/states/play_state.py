@@ -86,6 +86,8 @@ class play_state:
             for grid_x in range(self.map.tiles_x):
                 if (grid_x, grid_y) == (self.player.grid_x, self.player.grid_y):
                     continue
+                if self.map.is_blocked(grid_x, grid_y):
+                    continue
 
                 possible_tiles.append((grid_x, grid_y))
 
